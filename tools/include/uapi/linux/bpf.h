@@ -2233,7 +2233,7 @@ union bpf_attr {
 	FN(get_local_storage),		\
 	FN(sk_select_reuseport),	\
 	FN(skb_ancestor_cgroup_id), \
-	FN(probe_read_user)
+	FN(probe_read_user),
 
 /* integer value in 'imm' field of BPF_CALL instruction selects which helper
  * function eBPF program intends to call
