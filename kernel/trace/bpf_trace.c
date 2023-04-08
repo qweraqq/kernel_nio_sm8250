@@ -166,36 +166,36 @@ static const struct bpf_func_proto bpf_probe_read_user_str_proto = {
 	.arg3_type	= ARG_ANYTHING,
 };
 
-static __always_inline int
-bpf_probe_read_kernel_common(void *dst, u32 size, const void *unsafe_ptr,
-			     const bool compat)
-{
-	int ret = security_locked_down(LOCKDOWN_BPF_READ);
+// static __always_inline int
+// bpf_probe_read_kernel_common(void *dst, u32 size, const void *unsafe_ptr,
+// 			     const bool compat)
+// {
+// 	int ret = security_locked_down(LOCKDOWN_BPF_READ);
 
-	if (unlikely(ret < 0))
-		goto out;
-	ret = compat ? probe_kernel_read(dst, unsafe_ptr, size) :
-	      probe_kernel_read_strict(dst, unsafe_ptr, size);
-	if (unlikely(ret < 0))
-out:
-		memset(dst, 0, size);
-	return ret;
-}
+// 	if (unlikely(ret < 0))
+// 		goto out;
+// 	ret = compat ? probe_kernel_read(dst, unsafe_ptr, size) :
+// 	      probe_kernel_read_strict(dst, unsafe_ptr, size);
+// 	if (unlikely(ret < 0))
+// out:
+// 		memset(dst, 0, size);
+// 	return ret;
+// }
 
-BPF_CALL_3(bpf_probe_read_kernel, void *, dst, u32, size,
-	   const void *, unsafe_ptr)
-{
-	return bpf_probe_read_kernel_common(dst, size, unsafe_ptr, false);
-}
+// BPF_CALL_3(bpf_probe_read_kernel, void *, dst, u32, size,
+// 	   const void *, unsafe_ptr)
+// {
+// 	return bpf_probe_read_kernel_common(dst, size, unsafe_ptr, false);
+// }
 
-static const struct bpf_func_proto bpf_probe_read_kernel_proto = {
-	.func		= bpf_probe_read_kernel,
-	.gpl_only	= true,
-	.ret_type	= RET_INTEGER,
-	.arg1_type	= ARG_PTR_TO_UNINIT_MEM,
-	.arg2_type	= ARG_CONST_SIZE_OR_ZERO,
-	.arg3_type	= ARG_ANYTHING,
-};
+// static const struct bpf_func_proto bpf_probe_read_kernel_proto = {
+// 	.func		= bpf_probe_read_kernel,
+// 	.gpl_only	= true,
+// 	.ret_type	= RET_INTEGER,
+// 	.arg1_type	= ARG_PTR_TO_UNINIT_MEM,
+// 	.arg2_type	= ARG_CONST_SIZE_OR_ZERO,
+// 	.arg3_type	= ARG_ANYTHING,
+// };
 
 BPF_CALL_3(bpf_probe_read_compat, void *, dst, u32, size,
 	   const void *, unsafe_ptr)
@@ -212,45 +212,45 @@ static const struct bpf_func_proto bpf_probe_read_compat_proto = {
 	.arg3_type	= ARG_ANYTHING,
 };
 
-static __always_inline int
-bpf_probe_read_kernel_str_common(void *dst, u32 size, const void *unsafe_ptr,
-				 const bool compat)
-{
-	int ret = security_locked_down(LOCKDOWN_BPF_READ);
+// static __always_inline int
+// bpf_probe_read_kernel_str_common(void *dst, u32 size, const void *unsafe_ptr,
+// 				 const bool compat)
+// {
+// 	int ret = security_locked_down(LOCKDOWN_BPF_READ);
 
-	if (unlikely(ret < 0))
-		goto out;
-	/*
-	 * The strncpy_from_unsafe_*() call will likely not fill the entire
-	 * buffer, but that's okay in this circumstance as we're probing
-	 * arbitrary memory anyway similar to bpf_probe_read_*() and might
-	 * as well probe the stack. Thus, memory is explicitly cleared
-	 * only in error case, so that improper users ignoring return
-	 * code altogether don't copy garbage; otherwise length of string
-	 * is returned that can be used for bpf_perf_event_output() et al.
-	 */
-	ret = compat ? strncpy_from_unsafe(dst, unsafe_ptr, size) :
-	      strncpy_from_unsafe_strict(dst, unsafe_ptr, size);
-	if (unlikely(ret < 0))
-out:
-		memset(dst, 0, size);
-	return ret;
-}
+// 	if (unlikely(ret < 0))
+// 		goto out;
+// 	/*
+// 	 * The strncpy_from_unsafe_*() call will likely not fill the entire
+// 	 * buffer, but that's okay in this circumstance as we're probing
+// 	 * arbitrary memory anyway similar to bpf_probe_read_*() and might
+// 	 * as well probe the stack. Thus, memory is explicitly cleared
+// 	 * only in error case, so that improper users ignoring return
+// 	 * code altogether don't copy garbage; otherwise length of string
+// 	 * is returned that can be used for bpf_perf_event_output() et al.
+// 	 */
+// 	ret = compat ? strncpy_from_unsafe(dst, unsafe_ptr, size) :
+// 	      strncpy_from_unsafe_strict(dst, unsafe_ptr, size);
+// 	if (unlikely(ret < 0))
+// out:
+// 		memset(dst, 0, size);
+// 	return ret;
+// }
 
-BPF_CALL_3(bpf_probe_read_kernel_str, void *, dst, u32, size,
-	   const void *, unsafe_ptr)
-{
-	return bpf_probe_read_kernel_str_common(dst, size, unsafe_ptr, false);
-}
+// BPF_CALL_3(bpf_probe_read_kernel_str, void *, dst, u32, size,
+// 	   const void *, unsafe_ptr)
+// {
+// 	return bpf_probe_read_kernel_str_common(dst, size, unsafe_ptr, false);
+// }
 
-static const struct bpf_func_proto bpf_probe_read_kernel_str_proto = {
-	.func		= bpf_probe_read_kernel_str,
-	.gpl_only	= true,
-	.ret_type	= RET_INTEGER,
-	.arg1_type	= ARG_PTR_TO_UNINIT_MEM,
-	.arg2_type	= ARG_CONST_SIZE_OR_ZERO,
-	.arg3_type	= ARG_ANYTHING,
-};
+// static const struct bpf_func_proto bpf_probe_read_kernel_str_proto = {
+// 	.func		= bpf_probe_read_kernel_str,
+// 	.gpl_only	= true,
+// 	.ret_type	= RET_INTEGER,
+// 	.arg1_type	= ARG_PTR_TO_UNINIT_MEM,
+// 	.arg2_type	= ARG_CONST_SIZE_OR_ZERO,
+// 	.arg3_type	= ARG_ANYTHING,
+// };
 
 BPF_CALL_3(bpf_probe_read_compat_str, void *, dst, u32, size,
 	   const void *, unsafe_ptr)
@@ -707,14 +707,14 @@ tracing_func_proto(enum bpf_func_id func_id, const struct bpf_prog *prog)
 		return &bpf_get_prandom_u32_proto;
 	case BPF_FUNC_probe_read_user:
 		return &bpf_probe_read_user_proto;
-	case BPF_FUNC_probe_read_kernel:
-		return &bpf_probe_read_kernel_proto;
+	// case BPF_FUNC_probe_read_kernel:
+	// 	return &bpf_probe_read_kernel_proto;
 	case BPF_FUNC_probe_read:
 		return &bpf_probe_read_compat_proto;
 	case BPF_FUNC_probe_read_user_str:
 		return &bpf_probe_read_user_str_proto;
-	case BPF_FUNC_probe_read_kernel_str:
-		return &bpf_probe_read_kernel_str_proto;
+	// case BPF_FUNC_probe_read_kernel_str:
+	// 	return &bpf_probe_read_kernel_str_proto;
 	case BPF_FUNC_probe_read_str:
 		return &bpf_probe_read_compat_str_proto;
 #ifdef CONFIG_CGROUPS

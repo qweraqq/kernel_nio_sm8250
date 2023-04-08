@@ -2126,13 +2126,6 @@ union bpf_attr {
  * 	Return
  * 		0 on success, or a negative error in case of failure.
  *
- * int bpf_probe_read_kernel(void *dst, u32 size, const void *unsafe_ptr)
- * 	Description
- * 		Safely attempt to read *size* bytes from kernel space address
- * 		*unsafe_ptr* and store the data in *dst*.
- * 	Return
- * 		0 on success, or a negative error in case of failure.
- *
  * int bpf_probe_read_user_str(void *dst, u32 size, const void *unsafe_ptr)
  * 	Description
  * 		Copy a NUL terminated string from an unsafe user address
@@ -2176,14 +2169,6 @@ union bpf_attr {
  * 		On success, the strictly positive length of the string,
  * 		including the trailing NUL character. On error, a negative
  * 		value.
- *
- * int bpf_probe_read_kernel_str(void *dst, u32 size, const void *unsafe_ptr)
- * 	Description
- * 		Copy a NUL terminated string from an unsafe kernel address *unsafe_ptr*
- * 		to *dst*. Same semantics as with bpf_probe_read_user_str() apply.
- * 	Return
- * 		On success, the strictly positive length of the string,	including
- * 		the trailing NUL character. On error, a negative value.
  */
 #define __BPF_FUNC_MAPPER(FN)		\
 	FN(unspec),			\
@@ -2271,9 +2256,7 @@ union bpf_attr {
 	FN(sk_select_reuseport),	\
 	FN(skb_ancestor_cgroup_id), \
 	FN(probe_read_user),		\
-	FN(probe_read_kernel),		\
-	FN(probe_read_user_str),	\
-	FN(probe_read_kernel_str),
+	FN(probe_read_user_str),
 
 /* integer value in 'imm' field of BPF_CALL instruction selects which helper
  * function eBPF program intends to call
