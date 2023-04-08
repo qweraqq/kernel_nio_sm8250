@@ -100,31 +100,31 @@ static const struct bpf_func_proto bpf_override_return_proto = {
 #endif
 
 // // https://github.com/iovisor/bcc/issues/3175#issuecomment-732414845
-// BPF_CALL_3(bpf_probe_read, void *, dst, u32, size, const void *, unsafe_ptr)
-// {
-// 	int ret;
+BPF_CALL_3(bpf_probe_read, void *, dst, u32, size, const void *, unsafe_ptr)
+{
+	int ret;
 
-// 	ret = probe_kernel_read(dst, unsafe_ptr, size);
-// 	if (unlikely(ret < 0))
-// 		goto out;
+	ret = probe_kernel_read(dst, unsafe_ptr, size);
+	if (unlikely(ret < 0))
+		goto out;
 
-// 	//https://github.com/iovisor/bcc/issues/3175
-//     ret = probe_user_read(dst, unsafe_ptr, size);
-//     if (unlikely(ret < 0))
-// out:
-// 		memset(dst, 0, size);
+	//https://github.com/iovisor/bcc/issues/3175
+    ret = probe_user_read(dst, unsafe_ptr, size);
+    if (unlikely(ret < 0))
+out:
+		memset(dst, 0, size);
 
-// 	return ret;
-// }
+	return ret;
+}
 
-// static const struct bpf_func_proto bpf_probe_read_proto = {
-// 	.func		= bpf_probe_read,
-// 	.gpl_only	= true,
-// 	.ret_type	= RET_INTEGER,
-// 	.arg1_type	= ARG_PTR_TO_UNINIT_MEM,
-// 	.arg2_type	= ARG_CONST_SIZE_OR_ZERO,
-// 	.arg3_type	= ARG_ANYTHING,
-// };
+static const struct bpf_func_proto bpf_probe_read_proto = {
+	.func		= bpf_probe_read,
+	.gpl_only	= true,
+	.ret_type	= RET_INTEGER,
+	.arg1_type	= ARG_PTR_TO_UNINIT_MEM,
+	.arg2_type	= ARG_CONST_SIZE_OR_ZERO,
+	.arg3_type	= ARG_ANYTHING,
+};
 
 BPF_CALL_3(bpf_probe_read_user, void *, dst, u32, size, const void *, unsafe_ptr)
 {
@@ -197,20 +197,20 @@ static const struct bpf_func_proto bpf_probe_read_user_str_proto = {
 // 	.arg3_type	= ARG_ANYTHING,
 // };
 
-BPF_CALL_3(bpf_probe_read_compat, void *, dst, u32, size,
-	   const void *, unsafe_ptr)
-{
-	return bpf_probe_read_kernel_common(dst, size, unsafe_ptr, true);
-}
+// BPF_CALL_3(bpf_probe_read_compat, void *, dst, u32, size,
+// 	   const void *, unsafe_ptr)
+// {
+// 	return bpf_probe_read_kernel_common(dst, size, unsafe_ptr, true);
+// }
 
-static const struct bpf_func_proto bpf_probe_read_compat_proto = {
-	.func		= bpf_probe_read_compat,
-	.gpl_only	= true,
-	.ret_type	= RET_INTEGER,
-	.arg1_type	= ARG_PTR_TO_UNINIT_MEM,
-	.arg2_type	= ARG_CONST_SIZE_OR_ZERO,
-	.arg3_type	= ARG_ANYTHING,
-};
+// static const struct bpf_func_proto bpf_probe_read_compat_proto = {
+// 	.func		= bpf_probe_read_compat,
+// 	.gpl_only	= true,
+// 	.ret_type	= RET_INTEGER,
+// 	.arg1_type	= ARG_PTR_TO_UNINIT_MEM,
+// 	.arg2_type	= ARG_CONST_SIZE_OR_ZERO,
+// 	.arg3_type	= ARG_ANYTHING,
+// };
 
 // static __always_inline int
 // bpf_probe_read_kernel_str_common(void *dst, u32 size, const void *unsafe_ptr,
@@ -252,20 +252,20 @@ static const struct bpf_func_proto bpf_probe_read_compat_proto = {
 // 	.arg3_type	= ARG_ANYTHING,
 // };
 
-BPF_CALL_3(bpf_probe_read_compat_str, void *, dst, u32, size,
-	   const void *, unsafe_ptr)
-{
-	return bpf_probe_read_kernel_str_common(dst, size, unsafe_ptr, true);
-}
+// BPF_CALL_3(bpf_probe_read_compat_str, void *, dst, u32, size,
+// 	   const void *, unsafe_ptr)
+// {
+// 	return bpf_probe_read_kernel_str_common(dst, size, unsafe_ptr, true);
+// }
 
-static const struct bpf_func_proto bpf_probe_read_compat_str_proto = {
-	.func		= bpf_probe_read_compat_str,
-	.gpl_only	= true,
-	.ret_type	= RET_INTEGER,
-	.arg1_type	= ARG_PTR_TO_UNINIT_MEM,
-	.arg2_type	= ARG_CONST_SIZE_OR_ZERO,
-	.arg3_type	= ARG_ANYTHING,
-};
+// static const struct bpf_func_proto bpf_probe_read_compat_str_proto = {
+// 	.func		= bpf_probe_read_compat_str,
+// 	.gpl_only	= true,
+// 	.ret_type	= RET_INTEGER,
+// 	.arg1_type	= ARG_PTR_TO_UNINIT_MEM,
+// 	.arg2_type	= ARG_CONST_SIZE_OR_ZERO,
+// 	.arg3_type	= ARG_ANYTHING,
+// };
 
 BPF_CALL_3(bpf_probe_write_user, void *, unsafe_ptr, const void *, src,
 	   u32, size)
@@ -668,6 +668,35 @@ static const struct bpf_func_proto bpf_current_task_under_cgroup_proto = {
 	.arg2_type      = ARG_ANYTHING,
 };
 
+BPF_CALL_3(bpf_probe_read_str, void *, dst, u32, size,
+	   const void *, unsafe_ptr)
+{
+	int ret;
+
+	/*
+	 * The strncpy_from_unsafe() call will likely not fill the entire
+	 * buffer, but that's okay in this circumstance as we're probing
+	 * arbitrary memory anyway similar to bpf_probe_read() and might
+	 * as well probe the stack. Thus, memory is explicitly cleared
+	 * only in error case, so that improper users ignoring return
+	 * code altogether don't copy garbage; otherwise length of string
+	 * is returned that can be used for bpf_perf_event_output() et al.
+	 */
+	ret = strncpy_from_unsafe(dst, unsafe_ptr, size);
+	if (unlikely(ret < 0))
+		memset(dst, 0, size);
+
+	return ret;
+}
+
+static const struct bpf_func_proto bpf_probe_read_str_proto = {
+	.func		= bpf_probe_read_str,
+	.gpl_only	= true,
+	.ret_type	= RET_INTEGER,
+	.arg1_type	= ARG_PTR_TO_UNINIT_MEM,
+	.arg2_type	= ARG_CONST_SIZE_OR_ZERO,
+	.arg3_type	= ARG_ANYTHING,
+};
 
 static const struct bpf_func_proto *
 tracing_func_proto(enum bpf_func_id func_id, const struct bpf_prog *prog)
@@ -710,13 +739,13 @@ tracing_func_proto(enum bpf_func_id func_id, const struct bpf_prog *prog)
 	// case BPF_FUNC_probe_read_kernel:
 	// 	return &bpf_probe_read_kernel_proto;
 	case BPF_FUNC_probe_read:
-		return &bpf_probe_read_compat_proto;
+		return &bpf_probe_read_proto;
 	case BPF_FUNC_probe_read_user_str:
 		return &bpf_probe_read_user_str_proto;
 	// case BPF_FUNC_probe_read_kernel_str:
 	// 	return &bpf_probe_read_kernel_str_proto;
 	case BPF_FUNC_probe_read_str:
-		return &bpf_probe_read_compat_str_proto;
+		return &bpf_probe_read_str_proto;
 #ifdef CONFIG_CGROUPS
 	case BPF_FUNC_get_current_cgroup_id:
 		return &bpf_get_current_cgroup_id_proto;
