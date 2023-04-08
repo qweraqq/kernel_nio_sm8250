@@ -100,41 +100,41 @@ static const struct bpf_func_proto bpf_override_return_proto = {
 #endif
 
 // // https://github.com/iovisor/bcc/issues/3175#issuecomment-732414845
-// BPF_CALL_3(bpf_probe_read, void *, dst, u32, size, const void *, unsafe_ptr)
-// {
-// 	int ret;
+BPF_CALL_3(bpf_probe_read, void *, dst, u32, size, const void *, unsafe_ptr)
+{
+	int ret;                                                                                                                                                                                                   
+																																																				
+	ret = probe_kernel_read(dst, unsafe_ptr, size);                                                                                                                                                            
+	if (unlikely(ret < 0)) {
+		ret = probe_user_read(dst, unsafe_ptr, size);
+		if (unlikely(ret < 0))
+			memset(dst, 0, size); 
+	}                                                                                                                                                                                                          
+																																																				
+	return ret;     
+}
 
-// 	ret = probe_kernel_read(dst, unsafe_ptr, size);
-// 	if (unlikely(ret < 0))
-// 		goto out;
-
-// 	//https://github.com/iovisor/bcc/issues/3175
-//     ret = probe_user_read(dst, unsafe_ptr, size);
-//     if (unlikely(ret < 0))
-// out:
-// 		memset(dst, 0, size);
-
-// 	return ret;
-// }
-
-// static const struct bpf_func_proto bpf_probe_read_proto = {
-// 	.func		= bpf_probe_read,
-// 	.gpl_only	= true,
-// 	.ret_type	= RET_INTEGER,
-// 	.arg1_type	= ARG_PTR_TO_UNINIT_MEM,
-// 	.arg2_type	= ARG_CONST_SIZE_OR_ZERO,
-// 	.arg3_type	= ARG_ANYTHING,
-// };
+static const struct bpf_func_proto bpf_probe_read_proto = {
+	.func		= bpf_probe_read,
+	.gpl_only	= true,
+	.ret_type	= RET_INTEGER,
+	.arg1_type	= ARG_PTR_TO_UNINIT_MEM,
+	.arg2_type	= ARG_CONST_SIZE_OR_ZERO,
+	.arg3_type	= ARG_ANYTHING,
+};
 
 BPF_CALL_3(bpf_probe_read_user, void *, dst, u32, size, const void *, unsafe_ptr)
 {
-	int ret;
-
-	ret = probe_user_read(dst, unsafe_ptr, size);
-	if (unlikely(ret < 0))
-		memset(dst, 0, size);
-
-	return ret;
+	int ret;                                                                                                                                                                                                   
+																																																				
+	ret = probe_kernel_read(dst, unsafe_ptr, size);                                                                                                                                                            
+	if (unlikely(ret < 0)) {
+		ret = probe_user_read(dst, unsafe_ptr, size);
+		if (unlikely(ret < 0))
+			memset(dst, 0, size); 
+	}                                                                                                                                                                                                          
+																																																				
+	return ret;    
 }
 
 static const struct bpf_func_proto bpf_probe_read_user_proto = {
@@ -191,21 +191,6 @@ BPF_CALL_3(bpf_probe_read_kernel, void *, dst, u32, size,
 
 static const struct bpf_func_proto bpf_probe_read_kernel_proto = {
 	.func		= bpf_probe_read_kernel,
-	.gpl_only	= true,
-	.ret_type	= RET_INTEGER,
-	.arg1_type	= ARG_PTR_TO_UNINIT_MEM,
-	.arg2_type	= ARG_CONST_SIZE_OR_ZERO,
-	.arg3_type	= ARG_ANYTHING,
-};
-
-BPF_CALL_3(bpf_probe_read_compat, void *, dst, u32, size,
-	   const void *, unsafe_ptr)
-{
-	return bpf_probe_read_kernel_common(dst, size, unsafe_ptr, true);
-}
-
-static const struct bpf_func_proto bpf_probe_read_compat_proto = {
-	.func		= bpf_probe_read_compat,
 	.gpl_only	= true,
 	.ret_type	= RET_INTEGER,
 	.arg1_type	= ARG_PTR_TO_UNINIT_MEM,
@@ -712,7 +697,7 @@ tracing_func_proto(enum bpf_func_id func_id, const struct bpf_prog *prog)
 	case BPF_FUNC_probe_read_kernel:
 		return &bpf_probe_read_kernel_proto;
 	case BPF_FUNC_probe_read:
-		return &bpf_probe_read_compat_proto;
+		return &bpf_probe_read_proto;
 	case BPF_FUNC_probe_read_user_str:
 		return &bpf_probe_read_user_str_proto;
 	case BPF_FUNC_probe_read_kernel_str:
