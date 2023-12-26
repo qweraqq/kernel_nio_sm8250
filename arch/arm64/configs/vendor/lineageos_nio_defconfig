@@ -793,6 +793,7 @@ CONFIG_KPROBE_EVENTS=y
 # https://github.com/iovisor/bpftrace/blob/master/INSTALL.md
 # https://github.com/iovisor/bcc/blob/master/INSTALL.md
 # https://github.com/iovisor/bcc/blob/master/tools/criticalstat.py
+# https://eunomia.dev/tutorials/bcc-documents/kernel_config/#bpf-related-kernel-configurations
 CONFIG_BPF=y
 CONFIG_BPF_EVENTS=y
 CONFIG_PERF_EVENTS=y
@@ -814,9 +815,9 @@ CONFIG_KRETPROBES=y
 CONFIG_FTRACE_SYSCALLS=y
 CONFIG_HAVE_REGS_AND_STACK_ACCESS_API=y
 CONFIG_DEBUG_FS=y
-CONFIG_DEBUG_PREEMPT=y
-CONFIG_PREEMPT_TRACER=y
-CONFIG_PREEMPTIRQ_TRACEPOINTS=y
+# CONFIG_DEBUG_PREEMPT=y
+# CONFIG_PREEMPT_TRACER=y
+# CONFIG_PREEMPTIRQ_TRACEPOINTS=y
 CONFIG_FUNCTION_TRACER=y
 CONFIG_HAVE_DYNAMIC_FTRACE=y
 CONFIG_DYNAMIC_FTRACE=y
