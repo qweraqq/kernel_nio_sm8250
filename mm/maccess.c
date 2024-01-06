@@ -47,6 +47,9 @@ probe_write_common(void __user *dst, const void *src, size_t size)
 long __weak probe_kernel_read(void *dst, const void *src, size_t size)
     __attribute__((alias("__probe_kernel_read")));
 
+long __weak probe_kernel_read_strict(void *dst, const void *src, size_t size)
+    __attribute__((alias("__probe_kernel_read")));
+
 long __probe_kernel_read(void *dst, const void *src, size_t size)
 {
 	long ret;
