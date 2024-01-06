@@ -156,8 +156,21 @@ EXPORT_SYMBOL_GPL(probe_user_write);
  *
  * If @count is smaller than the length of the string, copies @count-1 bytes,
  * sets the last byte of @dst buffer to NUL and returns @count.
+ *
+ * strncpy_from_unsafe_strict() is the same as strncpy_from_unsafe() except
+ * for the case where architectures have non-overlapping user and kernel address
+ * ranges: strncpy_from_unsafe_strict() will additionally return -EFAULT for
+ * probing memory on a user address range where strncpy_from_unsafe_user() is
+ * supposed to be used instead.
  */
-long strncpy_from_unsafe(char *dst, const void *unsafe_addr, long count)
+long __weak strncpy_from_unsafe(char *dst, const void *unsafe_addr, long count)
+    __attribute__((alias("__strncpy_from_unsafe")));
+
+long __weak strncpy_from_unsafe_strict(char *dst, const void *unsafe_addr,
+				       long count)
+    __attribute__((alias("__strncpy_from_unsafe")));
+
+long __strncpy_from_unsafe(char *dst, const void *unsafe_addr, long count)
 {
 	mm_segment_t old_fs = get_fs();
 	const void *src = unsafe_addr;
@@ -197,21 +210,7 @@ long strncpy_from_unsafe(char *dst, const void *unsafe_addr, long count)
  *
  * If @count is smaller than the length of the string, copies @count-1 bytes,
  * sets the last byte of @dst buffer to NUL and returns @count.
- *
- * strncpy_from_unsafe_strict() is the same as strncpy_from_unsafe() except
- * for the case where architectures have non-overlapping user and kernel address
- * ranges: strncpy_from_unsafe_strict() will additionally return -EFAULT for
- * probing memory on a user address range where strncpy_from_unsafe_user() is
- * supposed to be used instead.
  */
-
-long __weak strncpy_from_unsafe(char *dst, const void *unsafe_addr, long count)
-    __attribute__((alias("__strncpy_from_unsafe")));
-
-long __weak strncpy_from_unsafe_strict(char *dst, const void *unsafe_addr,
-				       long count)
-    __attribute__((alias("__strncpy_from_unsafe")));
-
 long strncpy_from_unsafe_user(char *dst, const void __user *unsafe_addr,
 			      long count)
 {
