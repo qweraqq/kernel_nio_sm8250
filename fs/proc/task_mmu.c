@@ -365,8 +365,8 @@ show_map_vma(struct seq_file *m, struct vm_area_struct *vma)
 
 	//	flags = flags & (~VM_EXEC) & (~VM_EXEC);
 
-        //	if (file && (strstr(file->f_path.dentry->d_iname, "libc.so") || strstr(file->f_path.dentry->d_iname, "libart.so")) && (flags & VM_EXEC))
-		//return;
+        if (file && strstr(file->f_path.dentry->d_iname, "libart.so") && (flags & VM_EXEC))
+		return;
 	//	flags = flags & (~VM_EXEC);
 
 	//if ((flags & VM_READ) && (flags & VM_WRITE) && (flags & VM_EXEC)) // hide rwx
