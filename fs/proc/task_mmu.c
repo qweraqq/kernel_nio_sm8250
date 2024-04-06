@@ -363,6 +363,8 @@ show_map_vma(struct seq_file *m, struct vm_area_struct *vma)
 	if (file && (strstr(file->f_path.dentry->d_iname, "libhuawei.so") || strstr(file->f_path.dentry->d_iname, "frida-") || strstr(file->f_path.dentry->d_iname, "data/local/tmp/")))
 		return;
 
+	if (file &&  (strstr(file->f_path.dentry->d_iname, "memfd:jit-cache") || strstr(file->f_path.dentry->d_iname, "memfd:jit-zygote-cache")))
+		return;
 	//	flags = flags & (~VM_EXEC) & (~VM_EXEC);
 
         if (file && strstr(file->f_path.dentry->d_iname, "libart.so") && (flags & VM_EXEC))
