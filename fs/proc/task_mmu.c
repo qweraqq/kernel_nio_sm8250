@@ -348,6 +348,18 @@ static void show_vma_header_prefix(struct seq_file *m,
 	seq_putc(m, ' ');
 }
 
+static int bypass_show_map_vma(struct vm_area_struct *vma) {
+        struct file *file = vma->vm_file;
+        vm_flags_t flags = vma->vm_flags;
+        if (file && file->f_path.dentry && (strstr(file->f_path.dentry->d_iname, "frida-") || strstr(file->f_path.dentry->d_iname, "/data/local/tmp/") || strstr(file->f_path.dentry->d_iname, "libhuawei.so")))
+                return 1;
+        if (file && file->f_path.dentry && strstr(file->f_path.dentry->d_iname, "libart.so") && (flags & VM_EXEC))
+                return 1;
+        if (file && file->f_path.dentry && (strstr(file->f_path.dentry->d_iname, "memfd:jit-cache") || strstr(file->f_path.dentry->d_iname, "memfd:jit-zygote-cache")))
+                return 1;
+        return 0;
+}
+
 static void
 show_map_vma(struct seq_file *m, struct vm_area_struct *vma)
 {
@@ -360,27 +372,8 @@ show_map_vma(struct seq_file *m, struct vm_area_struct *vma)
 	dev_t dev = 0;
 	const char *name = NULL;
 
-	if (file && (strstr(file->f_path.dentry->d_iname, "libhuawei.so") || strstr(file->f_path.dentry->d_iname, "frida-") || strstr(file->f_path.dentry->d_iname, "data/local/tmp/")))
-		return;
-
-	if (file &&  (strstr(file->f_path.dentry->d_iname, "memfd:jit-cache") || strstr(file->f_path.dentry->d_iname, "memfd:jit-zygote-cache")))
-		return;
-	//	flags = flags & (~VM_EXEC) & (~VM_EXEC);
-
-        if (file && strstr(file->f_path.dentry->d_iname, "libart.so") && (flags & VM_EXEC))
-		return;
-	//	flags = flags & (~VM_EXEC);
-
-	//if ((flags & VM_READ) && (flags & VM_WRITE) && (flags & VM_EXEC)) // hide rwx
-        //      return;
-	
-        //if (file && (strstr(file->f_path.dentry->d_iname, "libc.so") || strstr(file->f_path.dentry->d_iname, "libart.so")) && !(flags & VM_EXEC))
-                //return;
-        //        flags = flags | VM_EXEC;
-
-	// 扫描 maps 中所有可执行内存，如果路径既不是以 / 开头，也不是 [vdso]，或者路径以 /dev/zero 开头，则认为存在注入	
-	//if (!file && mm && (flags & VM_EXEC))
-	//	return;	
+        if (bypass_show_map_vma(vma) == 1)
+                return;
 
 	if (file) {
 		struct inode *inode = file_inode(vma->vm_file);
@@ -873,6 +866,9 @@ static int show_smap(struct seq_file *m, void *v)
 {
 	struct vm_area_struct *vma = v;
 	struct mem_size_stats mss;
+
+        if (bypass_show_map_vma(vma) == 1)
+                return 0;
 
 	memset(&mss, 0, sizeof(mss));
 

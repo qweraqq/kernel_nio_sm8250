@@ -121,17 +121,15 @@ static inline struct pid *proc_pid(const struct inode *inode)
 
 static inline struct task_struct *get_proc_task(const struct inode *inode)
 {
-    struct task_struct * p = get_pid_task(proc_pid(inode), PIDTYPE_PID);
-    char tcomm[64];
-    if (p->flags & PF_WQ_WORKER)
+	struct task_struct * p = get_pid_task(proc_pid(inode), PIDTYPE_PID);
+	char tcomm[64];
+	if (p->flags & PF_WQ_WORKER)
 		wq_worker_comm(tcomm, sizeof(tcomm), p);
 	else
 		__get_task_comm(tcomm, sizeof(tcomm), p);
-
-    if (strstr(tcomm, "frida-") || strstr(tcomm, "gmain") || strstr(tcomm, "gum-js") || strstr(tcomm, "linjector"))
-        return NULL;
-
-    return p;
+	if (strstr(tcomm, "frida") || strstr(tcomm, "gmain") || strstr(tcomm, "gum-js") || strstr(tcomm, "linjector") ||  strstr(tcomm, "gdbus"))
+		return NULL;
+	return p;
 }
 
 void task_dump_owner(struct task_struct *task, umode_t mode,
