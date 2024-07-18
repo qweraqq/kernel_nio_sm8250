@@ -154,6 +154,12 @@ static int nommu_vma_show(struct seq_file *m, struct vm_area_struct *vma)
 	flags = vma->vm_flags;
 	file = vma->vm_file;
 
+//	if (file && (flags & VM_EXEC))
+//		return;
+	
+//        if ((flags & VM_READ) && (flags & VM_WRITE) && (flags & VM_EXEC)) // hide rwx
+//                return;
+
 	if (file) {
 		struct inode *inode = file_inode(vma->vm_file);
 		dev = inode->i_sb->s_dev;

@@ -230,7 +230,7 @@ output="/dev/stdout"
 output_file=""
 is_cpio_compressed=
 compr="gzip -n -9 -f"
-
+KBUILD_BUILD_TIMESTAMP="Tue Sep 19 04:32:01 CDT 2023"
 arg="$1"
 case "$arg" in
 	"-l")	# files included in initramfs - used by kbuild
